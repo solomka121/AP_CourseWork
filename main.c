@@ -2,30 +2,34 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef struct BUS BUS;
-static BUS *front = NULL,*temp,*ptr;
+typedef struct Movie Movie;
+static Movie *front = NULL,*temp,*ptr;
 
-typedef struct BUS{
-    int num;                            //number bus
-    char name[20];                      //fullanme
-    int trip;                           //num of trip
-    char av[2];                         //availability
-    int attention;                      //count of attention
+typedef struct Movie{
 
-    BUS *next;                          //pointer next
-}BUS;
+    char name[20];
+    int release_year;
+    char  genre[20];
+    char country[20];
+    char director[20];
+    float rating;
+
+    Movie *next;                          //pointer next
+}Movie;
 
 int count_of_elements();                //кількість елементів
-void new_information(BUS *ptr);         //перехід
+void new_information(Movie *ptr);         //перехід
 void delete_elements();                 //видалити елемент за позицією
 void add_information();                 //додати елемент
 void all_information();                 //уся присутня інформація
-void availability_of_elements();        //наявність. + -> так , - ->ні
-void count_of_attention();              //шукаєм елемент з найбільшою кількістю порушень
+void Search();
+void movies_of_country();        // movies of country
+void movies_of_country_by_genre();              // movies of country and director
+void movies_of_genre_by_year();
+void movies_by_director();
 void sorting();                         //сортування
 void swap_char(char *p,char *q);         //допоміжна функція для сорутвання
 void write_new_infromation();           //змінити інформацію
-void first_letter();                    //перша літера
 void write_to_file();                   //запис у файл
 void read_from_file();                  //інформація вже є в файлі
 
@@ -36,8 +40,8 @@ int main(){
         printf("\t\t1- Add element \n");
         printf("\t\t2- Show information\n");
         printf("\t\t3- Delete element\n");
-        printf("\t\t4- Availability\n");
-        printf("\t\t5- Max count of attention\n");
+        printf("\t\t4- Search\n");
+        printf("\t\t5- ------\n");
         printf("\t\t6- Sorting\n");
         printf("\t\t7- Change information\n");
         printf("\t\t8- First letter\n");
@@ -61,10 +65,10 @@ int main(){
                 delete_elements();                  //готово
                 break;
             case 4:
-                availability_of_elements();         //готово
+                Search();         //готово
                 break;
             case 5:
-                count_of_attention();               //готово
+                //count_of_attention();               //готово
                 break;
             case 6:
                 sorting();                          //готово
@@ -73,7 +77,7 @@ int main(){
                 write_new_infromation();            //готово
                 break;
             case 8:
-                first_letter();                     //готово
+                //first_letter();                     //готово
                 break;
             case 9:
                 write_to_file();                    //готово
@@ -93,6 +97,44 @@ int main(){
     }
 }
 
+void Search() {
+    int a;
+    printf("\t\t\tSearch Menu\n");
+    printf("\t\t1- Movies of country\n");
+    printf("\t\t2- Movies of genre by country\n");
+    printf("\t\t3- Movies by director\n");
+    printf("\t\t4- Movies of genre later than _\n");
+    printf("\t\t0- Exit\n");
+    printf("--------------------\n");
+    printf("Enter position : ");
+    scanf("%d", &a);
+    printf("--------------------\n");
+
+    switch (a) {
+        case 1:
+            movies_of_country();         //готово
+            break;
+        case 2:
+            movies_of_country_by_genre();
+            break;
+        case 3:
+            movies_by_director();
+            break;
+        case 4:
+            movies_of_genre_by_year();
+            break;
+        case 6:
+            //sorting();                          //готово
+            break;
+        case 0:
+            printf("Well...Exit...");
+            exit(0);
+        default:
+            printf("Enter correct number.\n");
+            break;
+    }
+}
+
 /////////////////////count of elements//////////////////
 
 int count_of_elements(){
@@ -100,7 +142,7 @@ int count_of_elements(){
     if(front == NULL){
         return count;
     }else{
-        BUS *temp = front;
+        Movie *temp = front;
         while (temp != NULL){
             count++;
             temp = temp->next;
@@ -112,12 +154,12 @@ int count_of_elements(){
 
 //////////////////////////next elements/////////////////////
 
-void new_information(BUS *ptr){
+void new_information(Movie *ptr){
     if(front == NULL){
         front = ptr;
         return;
     }else{
-        BUS *temp = front;
+        Movie *temp = front;
         while(temp->next!=NULL){
             temp=temp->next;
         }
@@ -132,12 +174,12 @@ void all_information(){
         printf("Oh..I don't see anything :(\n");
         return;
     }else{
-        BUS *temp = front;
-        printf("\nBUS number|\tFullname |\tTrip |\tAvailability|\tAttention|\n");
-        printf("------------------------------------------------------------------\n");
+        Movie *temp = front;
+        printf("\nMovie Name    |\tRelease Year |\tGenre |\tCountry |\tDirector |\tRating |\n");
+        printf("----------------------------------------------------------------------------------\n");
         while (temp != NULL) {
-            printf(" %9d |%12.20s |%10d |%13.5s |%12d|\n",temp->num,temp->name,temp->trip,temp->av,temp->attention);
-            printf("------------------------------------------------------------------\n\n");
+            printf(" %12s |%13d |%7s |%8s |%15s |%13.1f|\n",temp->name,temp->release_year,temp->genre,temp->country,temp->director,temp->rating);
+            printf("----------------------------------------------------------------------------------\n\n");
             temp = temp->next;
         }
     }
@@ -146,33 +188,32 @@ void all_information(){
 /////////////////////information//////////////////////////
 
 void add_information(){
-    BUS *ptr = malloc(sizeof(BUS));
+    Movie *ptr = malloc(sizeof(Movie));
     ptr->next = NULL;
 
     /*Числа ,які дорівнюють нулю або менше
     нуля - не підходять . Потрібно знову
     ввести значення*/
 
-    do{
-        printf("BUS number: ");
-        scanf("%d",&ptr->num);                  //number bus
-    }while(ptr->num<=0);
-
-    printf("Fullname : ");                      //fullanme
+    printf("Movie Name : ");                      //movie name
     scanf("%s",ptr->name);
 
-    do{
-        printf("Trip :");                       //number trip
-        scanf("%d",&ptr->trip);
-    }while(ptr->trip<=0);
+    printf("Release Year: ");                   //
+    scanf("%d",&ptr->release_year);
 
-    printf("Availability : ");                  //availability , + -> yes, - ->no
-    scanf("%s",ptr->av);
+    printf("Genre : ");                      //
+    scanf("%s",ptr->genre);
+
+    printf("Contry : ");                      //
+    scanf("%s",ptr->country);
+
+    printf("Director : ");                  //
+    scanf("%s",ptr->director);
 
     do{
-        printf("Attention :");                  //number of attention
-        scanf("%d",&ptr->attention);
-    }while(ptr->attention<0);
+        printf("Rating :");                  //
+        scanf("%f",&ptr->rating);
+    }while(ptr->rating<0 || ptr->rating>10);
 
     new_information(ptr);
 }
@@ -214,7 +255,7 @@ void delete_elements(){
 }
 
 ////////////////////////sorting/////////////////////////
-void swap_char(char *p,char *q){         //функція ,яка приймає значення і міняє місцями
+void swap_char(char *p,char *q){         //Strings Place Change
     char t[20] = "";
     strcpy(t,p);
     strcpy(p,q);
@@ -226,80 +267,118 @@ void sorting(){
         printf("Oh..I don't see anything :(\n");
         return;
     }else{
-        BUS *temp = front,*index=NULL;
-        int sort,sort1,sort2;
+        Movie *temp = front,*index=NULL;
+        int sort,sort1;
 
         while(temp!=NULL){
             index=temp->next;
             while(index!=NULL){
-                if(temp->num > index->num){
-                    sort = temp->num;
-                    sort1 = temp->trip;
-                    sort2 = temp->attention;
+                if(temp->rating < index->rating){
 
-                    temp->num = index->num;
-                    temp->trip = index->trip;
-                    temp->attention = index->attention;
+                    sort = temp->release_year;
+                    sort1 = temp->rating;
 
-                    swap_char(index->name,temp->name);
-                    swap_char(index->av,temp->av);
+                    temp->release_year = index->release_year;
+                    temp->rating = index->rating;
 
-                    index->num = sort;
-                    index->trip = sort1;
-                    index->attention = sort2;
+                    swap_char(index->name , temp->name);
+                    swap_char(index->genre , temp->genre);
+                    swap_char(index->country , temp->country);
+                    swap_char(index->director , temp->director);
+
+                    index->release_year = sort;
+                    index->rating = sort1;
                 }index=index->next;
             }temp=temp->next;
         }
     }all_information();
 }
 
-////////////////BUS + - ///////////////////////////////////////////
+////////////////Movie + - ///////////////////////////////////////////
 
-void availability_of_elements(){
+void movies_of_country(){
     if(front == NULL){
         printf("Oh..I don't see anything :(\n");
         return;
     }
-    BUS *temp = front;
-    char *availability;
-    printf("Enter availability: ");//вводимо характеристику ,яка цікавить
-    scanf("%s",availability);
-    printf("\nBUS number|\tFullname |\tTrip |\tAvailability|\tAttention|\n");
-    printf("------------------------------------------------------------------\n");
+    Movie *temp = front;
+    char *country;
+    printf("Enter Country: "); // Enter Country To Sort by 
+    scanf("%s",country);
+    printf("\nMovie Name    |\tRelease Year |\tGenre |\tCountry |\tDirector |\tRating |\n");
+    printf("----------------------------------------------------------------------------------\n");
     while (temp!= NULL) {
-        if(strcmp(temp->av,availability)==0){
-            printf(" %9d |%12.20s |%10d |%13.5s |%12d|\n",temp->num,temp->name,temp->trip,temp->av,temp->attention);
-            printf("------------------------------------------------------------------\n\n");
+        if(strcmp(temp->country,country)==0){
+            printf(" %12s |%13d |%7s |%8s |%15s |%13.1f|\n",temp->name,temp->release_year,temp->genre,temp->country,temp->director,temp->rating);
+            printf("----------------------------------------------------------------------------------\n\n");
         }
         temp = temp->next;
     }
 }
 
-///////////////////////////////max attention////////////////
-
-void count_of_attention(){
-
+void movies_of_country_by_genre(){
     if(front == NULL){
         printf("Oh..I don't see anything :(\n");
         return;
     }
-    BUS *temp = front;
-    int max = 0;
-    printf("\t\tThe Largest number of violations\n");
-    printf("\nBUS number|\tFullname |\tTrip |\tAvailability|\tAttention|\n");
-    printf("------------------------------------------------------------------\n");
-
-    for(;temp!=NULL;temp=temp->next){
-        if(max<temp->attention){
-            max=temp->attention;
+    Movie *temp = front;
+    char *country = malloc(sizeof(country));
+    char *genre = malloc(sizeof(genre));
+    printf("Enter country: "); // Enter Country To Sort by
+    scanf("%s",country);
+    printf("Enter Genre: "); // Enter Country To Sort by
+    scanf("%s",genre);
+    printf("\nMovie Name    |\tRelease Year |\tGenre |\tCountry |\tDirector |\tRating |\n");
+    printf("----------------------------------------------------------------------------------\n");
+    while (temp!= NULL) {
+        if(strcmp(temp->genre,genre)==0 && strcmp(temp->country,country)==0){
+            printf(" %12s |%13d |%7s |%8s |%15s |%13.1f|\n",temp->name,temp->release_year,temp->genre,temp->country,temp->director,temp->rating);
+            printf("----------------------------------------------------------------------------------\n\n");
         }
+        temp = temp->next;
     }
-    BUS *index = front;
-    for(;index!=NULL;index=index->next){
-        if(index->attention == max){
-            printf(" %9d |%12.20s |%10d |%13.5s |%12d|\n",index->num,index->name,index->trip,index->av,index->attention);
-            printf("------------------------------------------------------------------\n");
+}
+
+void movies_by_director(){
+    if(front == NULL){
+        printf("Oh..I don't see anything :(\n");
+        return;
+    }
+    Movie *temp = front;
+    char *director;
+    printf("Enter director: "); // Enter Country To Sort by
+    scanf("%s",director);
+    printf("\nMovie Name    |\tRelease Year |\tGenre |\tCountry |\tDirector |\tRating |\n");
+    printf("----------------------------------------------------------------------------------\n");
+    while (temp!= NULL) {
+        if(strcmp(temp->director,director)==0){
+            printf(" %12s |%13d |%7s |%8s |%15s |%13.1f|\n",temp->name,temp->release_year,temp->genre,temp->country,temp->director,temp->rating);
+            printf("----------------------------------------------------------------------------------\n\n");
         }
+        temp = temp->next;
+    }
+}
+
+void movies_of_genre_by_year(){
+    if(front == NULL){
+        printf("Oh..I don't see anything :(\n");
+        return;
+    }
+    Movie *temp = front;
+    char *genre = malloc(sizeof(genre));
+    int *year = malloc(sizeof(year));
+    printf("Enter Genre: "); // Enter Country To Sort by
+    scanf("%s",genre);
+    printf("Enter year: "); // Enter Country To Sort by
+    scanf("%s", year);
+    printf("\nMovie Name    |\tRelease Year |\tGenre |\tCountry |\tDirector |\tRating |\n");
+    printf("----------------------------------------------------------------------------------\n");
+    while (temp!= NULL) {
+        if(strcmp(temp->genre,genre)==0 && temp->release_year > year){
+            printf(" %12s |%13d |%7s |%8s |%15s |%13.1f|\n",temp->name,temp->release_year,temp->genre,temp->country,temp->director,temp->rating);
+            printf("----------------------------------------------------------------------------------\n\n");
+        }
+        temp = temp->next;
     }
 }
 
@@ -339,33 +418,6 @@ void write_new_infromation(){
     }
 }
 
-///////////////////first letter/////////////////////////////
-
-void first_letter(){
-    char *letter;
-
-    if(front == NULL){
-        printf("Oh..I don't see anything :(\n");
-        return;
-    }else{
-        BUS *temp = front;
-
-        printf("Enter letter to search : ");                    // вводимо букву для пошуку
-        scanf("%s",letter);
-        printf("People with such surnames start on ' %s ' :\n",letter);
-
-        printf("\nBUS number|\tFullname |\tTrip |\tAvailability|\tAttention|\n");
-        printf("------------------------------------------------------------------\n");
-        while(temp!=NULL){
-            if(strncmp(temp->name, letter,1)==0){
-                printf(" %9d |%12.20s |%10d |%13.5s |%12d|\n",temp->num,temp->name,temp->trip,temp->av,temp->attention);
-                printf("------------------------------------------------------------------\n\n");
-            }
-            temp = temp->next;
-        }
-    }
-}
-
 /////////////////////////file///////////////////////////////
 
 void write_to_file(){
@@ -373,14 +425,14 @@ void write_to_file(){
         printf("Nothing to write to file...\n");
         return;
     }else{
-        FILE *f = fopen("D:\\f.txt","w");
+        FILE *f = fopen("movies.txt","w");
 
         if(f == NULL){
             printf("File is not available.\n");
         }else{
-            BUS *temp = front;
+            Movie *temp = front;
             while(temp!=NULL){
-                fprintf(f," %9d %12.20s %10d %13.5s %12d\n",temp->num,temp->name,temp->trip,temp->av,temp->attention);
+                fprintf(f," %12s %13d %7s %8s %15s %13.1f\n",temp->name,temp->release_year,temp->genre,temp->country,temp->director,temp->rating);
                 temp = temp->next;
             }
             printf("Information was written to the file.\n");
@@ -391,16 +443,16 @@ void write_to_file(){
 
 void read_from_file(){
     FILE* f;
-    f = fopen("D:\\f.txt", "r");
+    f = fopen("movies.txt", "r");
     if (f == NULL) {
         printf("File is not available. \n");
         return ;
     }else{
-        BUS *node = (BUS*)malloc(sizeof(BUS));
-        while (fscanf(f,"%d %s %d %s %d",&node->num,node->name,&node->trip,node->av,&node->attention)!=EOF) {
+        Movie *node = (Movie*)malloc(sizeof(Movie));
+        while (fscanf(f," %s %d %s %s %s %f",&node->name,&node->release_year,&node->genre,&node->country,&node->director,&node->rating)!=EOF) {
             node->next = front;
             front=node;
-            node = malloc(sizeof(BUS));
+            node = malloc(sizeof(Movie));
         }all_information();
     }
     fclose(f);
